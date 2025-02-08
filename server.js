@@ -23,7 +23,7 @@ app.post('/users', async (req, res) => {
 
   // 필수값 확인
   if (!name || !user_id || !password || !phone || !email) {
-    return res.status(400).send('모든 필드를 입력해주세요');
+    return res.status(400).send('필수(*) 정보를 입력해주세요');
   }
 
   // 비밀번호 확인
