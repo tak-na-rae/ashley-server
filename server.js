@@ -4,31 +4,38 @@ const app = express();
 const models = require('./models');
 const port = 8080;
 
+
 app.use(express.json());//json형식의 데이터 처리할수 있도록 설정하는 코드
 app.use(cors({
   origin: ["https://ashley-three.vercel.app/", "http://localhost:5173"], //허용하는 출처 목록
   credentials: true
 })) //브라우저 이슈 막기위한것
 
+const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-// const secretKey = crypto.randomBytes(32).toString("hex");
-const secretKey = "dkfjoewkfnldksa11";
+// const secretKey = "dkfjoewkfnldksa11";
+const secretKey = crypto.randomBytes(32).toString("hex");
 
 //=====회원가입
 app.post('/users', async (req, res) => {
   const loginBody = req.body;
   console.log('서버에 받은 데이터===', loginBody);
-  const { name, user_id, password, passwordConfirm, birth, phone, email, region, store, marry, marketingChecked } = loginBody;
+  const { name, user_id, password, passwordConfirm, birth, phone, addr1,addr2, email, region, store, marry,
+    join_terms1,join_terms2,join_terms3,join_terms4, join_mk_mail,join_mk_sms,join_mk_dm,join_mk_coupon } = loginBody;
 
   // 필수값 확인
-  if (!name || !user_id || !password || !phone || !email) {
-    return res.status(400).send('필수(*) 정보를 입력해주세요');
+  if (!name || !user_id || !password || !phone || !email || !region || !store) {
+    return res.status(400).send("필수(*) 정보를 입력해주세요");
   }
 
   // 비밀번호 확인
   if (password !== passwordConfirm) {
-    return res.status(400).send('비밀번호가 일치하지 않습니다');
+    return res.status(400).send("비밀번호가 일치하지 않습니다");
+  }
+
+  if(!join_terms1 || !join_terms2 || !join_terms4){
+    return res.status(400).send("약관 동의 [필수]를 체크해주세요")
   }
 
   try {
@@ -49,13 +56,14 @@ app.post('/users', async (req, res) => {
       password: hashedPassword,
       birth,
       phone,
-      // zipcode,
-      // address,
+      addr1,
+      addr2,
       email,
-      // marketingChecked,
       region,
       store,
-      marry
+      marry,
+      join_terms1,join_terms2,join_terms3,join_terms4,
+      join_mk_mail,join_mk_sms,join_mk_dm,join_mk_coupon
     });
 
     res.send({ success: true, user: newUser });
@@ -66,45 +74,87 @@ app.post('/users', async (req, res) => {
 });
 
 //=====로그인
-app.post("/users/login", (req, res) => {
+app.post("/users/login", async (req, res) => {
   const loginBody = req.body;
-  console.log('loginBody:', loginBody);  // 로그인 요청 본문을 콘솔에 출력합니다.
-  const { user_id, pw } = loginBody; //입력값
+  console.log('loginBody:', loginBody);
+  const { userId,userPassword } = loginBody; //입력값
 
-  models.User.findOne({
-    where: {
-      user_id: user_id, //(좌)DB : (우)입력값
-    }
-  })
-  .then((result)=>{
+  // models.User.findOne({
+  //   where: {
+  //     user_id: userId, //(좌)DB : (우)입력값
+  //   }
+  // })
+  // .then((result)=>{
+    try {
+      const result = await models.User.findOne({
+        where: {
+          user_id: userId, //(좌)DB : (우)입력값
+        }
+      })
     console.log("정보==", result);
-    console.log("아이디==", result.user_id, user_id);
-    console.log("비밀번호==", result.pw, pw);
 
-    if(result.user_id === user_id && result.pw === pw){
-      console.log("로그인 성공");
-      const user = {
-        // id: user_id,
-        user_key: user_id,
-        username: user_id,
-      }
-      const accessToken = jwt.sign(user, secretKey, {expiresIn: '1h'});
-      return res.send({
-        user: result.user_id,
-        accessToken: accessToken
-       });
-    } else{
-      console.log("로그인 실패");
-      return res.status(401).send({
-        user: 'False',
-        message: '비밀번호가 틀렸습니다'
-      }); 
+    if (!result) {
+      console.log("아이디 존재하지 않음");
+      return res.status(404).send({
+        type: "id",
+        user: "false",
+        message: '존재하지 않는 계정입니다',
+      });
     }
-  })
-  .catch((err)=>{
+    
+    bcrypt.compare(userPassword, result.password, (err, isMatch) => {
+      if (err) {
+        console.error("비밀번호 비교 오류:", err);
+        return res.status(500).send("서버 오류");
+      }
+
+      if (isMatch) {
+        console.log("로그인 성공");
+        const user = {
+          user_key: userId,
+          user_name: userId,
+        };
+        const accessToken = jwt.sign(user, secretKey, { expiresIn: '1h' });
+        return res.send({
+          user: result.user_id,
+          accessToken: accessToken,
+        });
+      } else {
+        console.log("로그인 실패!!!! 비밀번호 틀림");
+        return res.status(401).send({
+          type: "pw",
+          user: "false",
+          message: '잘못된 비밀번호입니다',
+        });
+      }
+    });
+
+    // if(result.user_id === user_id && result.password === password){
+    //   console.log("로그인 성공");
+    //   const user = {
+    //     // id: user_id,
+    //     user_key: user_id,
+    //     username: user_id,
+    //   }
+    //   const accessToken = jwt.sign(user, secretKey, {expiresIn: '1h'});
+    //   return res.send({
+    //     user: result.user_id,
+    //     accessToken: accessToken
+    //    });
+    // } else{
+    //   console.log("로그인 실패");
+    //   return res.status(401).send({
+    //     user: 'False',
+    //     message: '비밀번호가 틀렸습니다'
+    //   }); 
+    // }
+
+  }
+  catch(err){
+  // .catch((err)=>{
     console.log(err);
     return res.status(500).send('서버 에러가 발생했습니다')
-  })
+  }
 })
 
 
@@ -125,7 +175,7 @@ app.post("/auth", (req, res) => {
         return res.send({ result: false });
       }
     } catch (err) {
-      console.erre(err);
+      console.error(err);
       return res.send({ result: false });
     } //검증실패
   }
@@ -151,6 +201,34 @@ app.get('/users/check-id', (req, res) => {
     res.send({ success: false, message: '서버 오류가 발생했습니다' })
   })
 })
+
+//=====마이페이지
+app.get("/users/mypage", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];  // 요청 헤더에서 Authorization 토큰 가져오기
+    if (!token) {
+      return res.status(401).send("토큰이 없습니다");
+    }
+
+    const decoded = jwt.verify(token, secretKey); // 토큰 검증
+    const userId = decoded.user_key; // 토큰에서 user_id 추출
+
+    const user = await models.User.findOne({ // 유저 정보 조회
+      where: { user_id: userId },
+      attributes: { exclude: ["password"] } // 비밀번호 제외하고 반환
+    });
+
+    if (!user) {
+      return res.status(404).send("유저 정보를 찾을 수 없습니다");
+    }
+
+    res.send(user); // 클라이언트에 유저 정보 반환
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("서버 오류 발생");
+  }
+});
+
 
 //=====
 app.listen(port, () => {

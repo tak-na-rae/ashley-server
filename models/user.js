@@ -28,11 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(30),
         allowNull: false, // 필수 입력
       },
-      zipcode: { //[#]선택
+      addr1: { //[#]선택
         type: DataTypes.STRING(10), // 숫자나 문자열로 처리
         allowNull: true,
       },
-      address: { //[#]선택
+      addr2: { //[#]선택
         type: DataTypes.STRING(30),
         allowNull: true, 
       },
@@ -47,6 +47,42 @@ module.exports = (sequelize, DataTypes) => {
       store: {
         type: DataTypes.STRING(10),
         allowNull: false,
+      },
+      marry: { //[#]선택
+        type: DataTypes.STRING(10),
+        allowNull: true,
+      },
+      join_terms1 : {
+        type: DataTypes.TINYINT(1), //true,false
+        allowNull: false, 
+      },
+      join_terms2 : {
+        type: DataTypes.TINYINT(1), //true,false
+        allowNull: false, 
+      },
+      join_terms3 : { //[#]선택
+        type: DataTypes.BOOLEAN,
+        allowNull: true, 
+      },
+      join_terms4 : {
+        type: DataTypes.TINYINT(1),
+        allowNull: false, 
+      },
+      join_mk_mail : { //[#]선택
+        type: DataTypes.TINYINT(1),
+        allowNull: true, 
+      },
+      join_mk_sms : { //[#]선택
+        type: DataTypes.TINYINT(1),
+        allowNull: true, 
+      },
+      join_mk_dm : { //[#]선택
+        type: DataTypes.TINYINT(1),
+        allowNull: true, 
+      },
+      join_mk_coupon : { //[#]선택
+        type: DataTypes.TINYINT(1),
+        allowNull: true, 
       },
     },
     {
