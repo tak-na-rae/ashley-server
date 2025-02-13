@@ -7,7 +7,7 @@ const port = 8080;
 
 app.use(express.json());//json형식의 데이터 처리할수 있도록 설정하는 코드
 app.use(cors({
-  origin: ["https://ashley-three.vercel.app/", "http://localhost:5173"], //허용하는 출처 목록
+  origin: ["http://ashley-three.vercel.app", "http://localhost:5173"], //허용하는 출처 목록
   credentials: true
 })) //브라우저 이슈 막기위한것
 
@@ -181,15 +181,17 @@ app.post("/auth", (req, res) => {
   }
 })
 
+
+
 //=====중복확인
 app.get('/users/check-id', (req, res) => {
-  const { user_id } = req.query;
-  if (!user_id) {
+  const { userId } = req.query;
+  if (!userId) {
     return res.status(400).send({ success: false, message: '아이디를 입력하세요' })
   }
   //데이터베이스에서 아이디 검색
   models.User.findOne({
-    where: { user_id },
+    where: { user_id: userId }, //(좌)DB : (우)입력값
   }).then((user) => {
     if (user) {
       res.send({ success: false, message: '이미 사용중인 아이디입니다' })
