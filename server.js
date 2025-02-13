@@ -9,11 +9,7 @@ app.use(express.json());//json형식의 데이터 처리할수 있도록 설정�
 app.use(cors({
   origin: ["https://ashley-three.vercel.app", "http://localhost:5173"], //허용하는 출처 목록
   credentials: true, // 자격 증명(쿠키, 인증 헤더)을 포함하는 요청 허용
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // 허용할 HTTP 메서드 지정
-  allowedHeaders: ["Content-Type", "Authorization"], // 클라이언트에서 사용할 헤더 지정
 })) //브라우저 이슈 막기위한것
-
-app.options("*", cors()); //모든 OPTIONS 요청 허용
 
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
@@ -188,7 +184,7 @@ app.post("/auth", (req, res) => {
 
 
 //=====중복확인
-app.get('/users/check-id', cors(), (req, res) => {
+app.get('/users/check-id', (req, res) => {
   const { user_id } = req.query;
   if (!user_id) {
     return res.status(400).send({ success: false, message: '아이디를 입력하세요' })
