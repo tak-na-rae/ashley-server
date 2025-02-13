@@ -204,6 +204,20 @@ app.get('/users/check-id', (req, res) => {
   })
 })
 
+
+//=== 서버 코드에서 회원정보 조회
+app.get('/users/list', (req, res) => {
+  const db = new sqlite3.Database('./database.sqlite3');
+  db.all('SELECT * FROM users', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ join_users:rows });
+  });
+  db.close();
+});
+
+
 //=====마이페이지
 app.get("/users/mypage", async (req, res) => {
   try {
