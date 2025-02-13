@@ -8,7 +8,10 @@ const port = 8080;
 app.use(express.json());//json형식의 데이터 처리할수 있도록 설정하는 코드
 app.use(cors({
   origin: ["http://ashley-three.vercel.app", "http://localhost:5173"], //허용하는 출처 목록
-  credentials: true
+  credentials: true, // 자격 증명(쿠키, 인증 헤더)을 포함하는 요청 허용
+  methods: ['GET', 'POST'], // 허용할 HTTP 메서드
+  allowedHeaders: ['Content-Type', 'Authorization'], // 허용할 헤더
+  credentials: true // 쿠키, 인증 정보 허용 여부
 })) //브라우저 이슈 막기위한것
 
 const bcrypt = require('bcryptjs');
@@ -185,13 +188,13 @@ app.post("/auth", (req, res) => {
 
 //=====중복확인
 app.get('/users/check-id', (req, res) => {
-  const { userId } = req.query;
-  if (!userId) {
+  const { user_id } = req.query;
+  if (!user_id) {
     return res.status(400).send({ success: false, message: '아이디를 입력하세요' })
   }
   //데이터베이스에서 아이디 검색
   models.User.findOne({
-    where: { user_id: userId }, //(좌)DB : (우)입력값
+    where: { user_id },
   }).then((user) => {
     if (user) {
       res.send({ success: false, message: '이미 사용중인 아이디입니다' })
