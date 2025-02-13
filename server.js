@@ -65,8 +65,16 @@ app.post('/users', async (req, res) => {
       join_terms1,join_terms2,join_terms3,join_terms4,
       join_mk_mail,join_mk_sms,join_mk_dm,join_mk_coupon
     });
+    
+    const user = { // 회원가입 후 JWT 토큰 생성
+      user_key: newUser.user_id,
+      user_name: newUser.name,
+    };
+    const accessToken = jwt.sign(user, secretKey, { expiresIn: '1h' }); //1시간만료
 
-    res.send({ success: true, user: newUser });
+    res.send({ success: true, user: newUser, accessToken });
+    // res.send({ success: true, user: newUser });
+
   } catch (error) {
     console.error(error);
     res.status(400).send('회원가입 실패');
