@@ -7,7 +7,7 @@ const port = 8080;
 
 app.use(express.json());//json형식의 데이터 처리할수 있도록 설정하는 코드
 app.use(cors({
-  origin: ["https://ashley-three.vercel.app", "http://localhost:5173"], //허용하는 출처 목록
+  origin: ["https://ashley-lucky.vercel.app", "http://localhost:5173"], //허용하는 출처 목록
   credentials: true, // 자격 증명(쿠키, 인증 헤더)을 포함하는 요청 허용
 })) //브라우저 이슈 막기위한것
 
